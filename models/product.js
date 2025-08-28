@@ -1,62 +1,55 @@
 const mysql = require('mysql2');
-const db = require('../config/db');
+
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
+});
+
+connection.connect((err) => {
+  if (err) console.error('DB connect error:', err);
+  else console.log('Connected to DB');
+});
 
 const Product = {
-  getAll: (callback) => {
-    const query = 'SELECT * FROM products';
-    db.query(query, callback);
-  },
-
-  getById: (id, callback) => {
-    const query = 'SELECT * FROM products WHERE id = ?';
-    db.query(query, [id], callback);
-  },
-
-  create: (productData, callback) => {
-    const query = `
-      INSERT INTO products 
-      (name, price, description, brand, category, stock, rating, numReviews, images, specifications) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [
-      productData.name,
-      productData.price,
-      productData.description || "",
-      productData.brand,
-      productData.category,
-      productData.stock || 0,
-      productData.rating || 0,
-      productData.numReviews || 0,
-      JSON.stringify(productData.images || []),
-      JSON.stringify(productData.specifications || {})
+  getAll: (cb) => connection.query('SELECT * FROM products', cb),
+  getById: (id, cb) => connection.query('SELECT * FROM products WHERE id = ?', [id], cb),
+  create: (data, cb) => {
+    const sql = `INSERT INTO products (name, price, description, brand, category, stock, rating, numReviews, images, specifications)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const vals = [
+      data.name || '',
+      data.price || 0,
+      data.description || '',
+      data.brand || '',
+      data.category || '',
+      data.stock || 0,
+      data.rating || 0,
+      data.numReviews || 0,
+      JSON.stringify(data.images || []),
+      JSON.stringify(data.specifications || {})
     ];
-    db.query(query, values, callback);
+    connection.query(sql, vals, cb);
   },
-
-  update: (id, productData, callback) => {
-    const query = `
-      UPDATE products SET 
-      name=?, price=?, description=?, brand=?, category=?, stock=?, rating=?, numReviews=?, images=?, specifications=? 
-      WHERE id=?`;
-    const values = [
-      productData.name,
-      productData.price,
-      productData.description || "",
-      productData.brand,
-      productData.category,
-      productData.stock || 0,
-      productData.rating || 0,
-      productData.numReviews || 0,
-      JSON.stringify(productData.images || []),
-      JSON.stringify(productData.specifications || {}),
-      id,
+  update: (id, data, cb) => {
+    const sql = `UPDATE products SET name=?, price=?, description=?, brand=?, category=?, stock=?, rating=?, numReviews=?, images=?, specifications=? WHERE id=?`;
+    const vals = [
+      data.name || '',
+      data.price || 0,
+      data.description || '',
+      data.brand || '',
+      data.category || '',
+      data.stock || 0,
+      data.rating || 0,
+      data.numReviews || 0,
+      JSON.stringify(data.images || []),
+      JSON.stringify(data.specifications || {}),
+      id
     ];
-    db.query(query, values, callback);
+    connection.query(sql, vals, cb);
   },
-
-  delete: (id, callback) => {
-    const query = 'DELETE FROM products WHERE id = ?';
-    db.query(query, [id], callback);
-  },
+  delete: (id, cb) => connection.query('DELETE FROM products WHERE id=?', [id], cb)
 };
 
 module.exports = Product;
