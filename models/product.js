@@ -7,17 +7,16 @@ const connection = mysql.createConnection({
   database: process.env.DB_NAME
 });
 
-connection.connect((err) => {
-  if (err) console.error('DB connect error:', err);
-  else console.log('Connected to DB');
+connection.connect(err => {
+  if (err) console.error('DB connection error:', err);
+  else console.log('DB connected');
 });
 
 const Product = {
-  getAll: (cb) => connection.query('SELECT * FROM products', cb),
-  getById: (id, cb) => connection.query('SELECT * FROM products WHERE id = ?', [id], cb),
+  getAll: cb => connection.query('SELECT * FROM products', cb),
+  getById: (id, cb) => connection.query('SELECT * FROM products WHERE id=?', [id], cb),
   create: (data, cb) => {
-    const sql = `INSERT INTO products (name, price, description, brand, category, stock, rating, numReviews, images, specifications)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const sql = `INSERT INTO products (name, price, description, brand, category, stock, rating, numReviews, images, specifications) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const vals = [
       data.name || '',
       data.price || 0,
@@ -49,7 +48,7 @@ const Product = {
     ];
     connection.query(sql, vals, cb);
   },
-  delete: (id, cb) => connection.query('DELETE FROM products WHERE id=?', [id], cb)
+  delete: (id, cb) => connection.query('DELETE FROM products WHERE id=?', [id], cb),
 };
 
 module.exports = Product;
